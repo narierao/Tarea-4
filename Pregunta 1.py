@@ -5,8 +5,6 @@ class Client:
 
     def __init__(self, actual_time):
         self.quantity_products = int(UniformInstance(1,50))
-        self.state = "Llegada"
-        self.queue_time = "No"
         self.looking_for = actual_time + ExponentialInstance(1/(5*60))
         self.queue_start = 0
         self.queue_finish = 0
@@ -21,9 +19,9 @@ class Cashier:
     def __init__(self, num, a, b, lambd):
         self.state = 0
         self.num = num
-        self.a = 0
-        self.b = 0
-        self.lambd = 0
+        self.a = a
+        self.b = b
+        self.lambd = lambd
 
     def change_params(self, a, b, lambd):
         self.a = a
@@ -54,7 +52,7 @@ def UniformInstance(a, b):
 
 def DaySimulation_a():
     
-    # initial params of clients arrives
+    # initial params of clients arrival
     client_rate_a = 2*60
     client_rate_b = 3*60
     client_rate_lambda = 0
@@ -106,7 +104,6 @@ def DaySimulation_a():
         next_event = get_next_event(client1_next_product, client2_next_product, client3_next_product, next_client_at, client_looking_for )
 
         if next_event >= 12*60*60:
-            #print("Fin de la simulación")
             n = 0
             queue_time = 0
 
@@ -124,10 +121,7 @@ def DaySimulation_a():
                 s += long_queue_time[key]            
             for key in list(long_queue_time.keys()):
                 mean_queue_long += key * long_queue_time[key] / s
-
-            #print(empty)
-            #print(full_cashers/(12*60*60))
-            
+                
             return (len(attended_client), queue_mean, mean_queue_long, empty, full_cashers/(12*60*60), lost_clients) 
         
         # arrive a client
@@ -316,11 +310,9 @@ def DaySimulation_a():
                 casher_free.append(2)
             if client3_in_casher == None:
                 casher_free.append(3)
-            # select chaser random
             if casher_free != []:
                 casher_assigment = rd.choice(casher_free)
                 if casher_assigment == 1:
-                    #print("Se asignó un cliente al cajero 1\t\t\t", actual_time)
                     client1_in_casher = client_looking_for.pop(0)
                     if actual_time >= 4*60*60 and actual_time <= 10*60*60:
                         cashier1.change_params(10, 20, 0)
@@ -328,10 +320,8 @@ def DaySimulation_a():
                         cashier1.change_params(10, 30, 0)
                     else:
                         cashier1.change_params(5, 11, 0)
-                    client1_next_product = cashier1.generate_next_product_attendance(actual_time) 
-
+                    client1_next_product = cashier1.generate_next_product_attendance(actual_time)
                 elif casher_assigment == 2:
-                    #print("Se asignó un cliente al cajero 2\t\t\t", actual_time)
                     client2_in_casher = client_looking_for.pop(0)
                     if actual_time >= 4*60*60 and actual_time <= 10*60*60:
                         cashier2.change_params(0, 0, 1/10)
@@ -340,9 +330,7 @@ def DaySimulation_a():
                     else:
                         cashier2.change_params(0, 0, 1/6)
                     client2_next_product = cashier2.generate_next_product_attendance(actual_time) 
-
                 else:
-                    #print("Se asignó un cliente al cajero 3\t\t\t", actual_time)
                     client3_in_casher = client_looking_for.pop(0)
                     if actual_time >= 4*60*60 and actual_time <= 10*60*60:
                         cashier3.change_params(6, 18, 0)
@@ -352,8 +340,6 @@ def DaySimulation_a():
                         cashier3.change_params(4, 16, 0)
                     client3_next_product = cashier3.generate_next_product_attendance(actual_time) 
             else:
-
-                # update queue data
                 long_queue_time[len(queue_client_list)] += actual_time - last_update_queue
                 last_update_queue = actual_time
                 long_queue_recurrence[len(queue_client_list)] += 1
